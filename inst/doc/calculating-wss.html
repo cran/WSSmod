@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Calculating Weighted Sum Scores</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Calculating Weighted Sum Scores</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(WSSmod)</span></code></pre></div>
+<div id="what-a-weighted-sum-score-is" class="section level2">
+<h2>What a Weighted Sum Score is</h2>
+<p>A Weighted Sum Score (WSS) summarizes a group of related proteins, a <em>module</em>, as one number per sample. For each module, every protein is sign-aligned using the sign of its <code>mean_beta</code> (its association with the core biomarkers), then the module score is the average of those aligned values, weighted by <code>mean_alpha_scaled</code> (network connectivity and association strength). A higher score means more activity of the module in the direction associated with the core biomarkers.</p>
+<p><code>calculate_WSS()</code> computes these scores from a samples-by-proteins matrix. By default it uses the bundled <code>&quot;core_AD_plasma_biomarkers&quot;</code> reference set, which defines 75 modules of plasma proteins built on STRING networks, as described in the <a href="https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text">preprint</a>. You can also supply your own module table.</p>
+</div>
+<div id="proteomic-data-and-what-calculate_wss-expects" class="section level2">
+<h2>Proteomic data and what <code>calculate_WSS()</code> expects</h2>
+<p>Proteomic platforms report different kinds of values:</p>
+<ul>
+<li><strong>SomaLogic SomaScan</strong> is aptamer based and reports relative fluorescence units (RFU) per protein.</li>
+<li><strong>TMT-MS</strong> (tandem mass tag) reports reporter-ion intensities that are relative within a plex, usually expressed as ratios to a reference channel.</li>
+<li><strong>DIA-MS</strong> (data-independent acquisition) reports label-free peptide or protein intensities.</li>
+</ul>
+<p><code>calculate_WSS()</code> does <strong>no normalization or scaling</strong> of its input. The matrix you pass must</p>
+<ul>
+<li>have samples as rows and proteins as columns, with column names matching the <code>symbol</code> values of the module table (gene symbols for the bundled set),</li>
+<li>already be normalized and scaled so that proteins are on a comparable scale,</li>
+<li>contain no missing values in the proteins used by a module. Impute, or drop the affected proteins or samples, first.</li>
+</ul>
+<p>The scores inherit the scale of the input, so the choice of normalization and scaling matters. The bundled reference set was built from SomaScan data on a rank-based inverse normal transformed (INT) scale, which makes no assumption about the distribution of the values. In our experience, TMT-MS and DIA-MS data processed TAMPOR-style as log2(median ratio) values has worked similarly well without needing a non-parametric transform, only z-scaling (unpublished data).</p>
+<div id="two-ways-to-prepare-a-matrix" class="section level3">
+<h3>Two ways to prepare a matrix</h3>
+<p>The package ships a small simulated matrix, <code>wss_example_expression</code>, that is already on a z-score-like scale. To show the two common preparations we first build a mock “raw” matrix from it. This is purely an illustration: the values are neither real RFUs nor real intensities.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co"># Mock raw values: positive and right-skewed, like intensities</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>raw &lt;-<span class="st"> </span><span class="kw">exp</span>(wss_example_expression)</span></code></pre></div>
+<p>One option is parametric: log2-transform, then z-scale each protein.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># z-scaled log2 values, one protein per column</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>z_log2 &lt;-<span class="st"> </span><span class="kw">scale</span>(<span class="kw">log2</span>(raw))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="kw">dim</span>(z_log2)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="co">#&gt; [1]  50 887</span></span></code></pre></div>
+<p>The other is a rank-based inverse normal transformation of each protein.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># Rank-based inverse normal transformation, one protein per column</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>int_values &lt;-<span class="st"> </span><span class="kw">apply</span>(raw, <span class="dv">2</span>, RNOmni<span class="op">::</span>RankNorm)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">dim</span>(int_values)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">#&gt; [1]  50 887</span></span></code></pre></div>
+<p>Either matrix can be passed to <code>calculate_WSS()</code>. Scores computed from differently prepared input are on different scales, so do not mix them in one analysis.</p>
+</div>
+</div>
+<div id="calculating-scores-with-the-bundled-reference-set" class="section level2">
+<h2>Calculating scores with the bundled reference set</h2>
+<p>The simulated matrix has a column for every protein in the default modules, so the default call scores all of them.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>res &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(wss_example_expression)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">names</span>(res)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;scores&quot;          &quot;summary_stats&quot;   &quot;module_sd&quot;       &quot;module_proteins&quot;</span></span></code></pre></div>
+<p>The result is a list with four parts.</p>
+<p><code>scores</code> is the samples-by-modules matrix of module scores.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">dim</span>(res<span class="op">$</span>scores)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="co">#&gt; [1] 50 75</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">head</span>(res<span class="op">$</span>scores[, <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>], <span class="dv">3</span>), <span class="dv">2</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="co">#&gt;          Merged.M17 Merged.M7 Merged.M4 PlasmaPTau181.M26</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co">#&gt; sample01      -0.87      0.36      0.05              0.69</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt; sample02       0.23     -0.50     -0.54             -0.04</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">#&gt; sample03       0.89     -0.42     -0.57              0.66</span></span></code></pre></div>
+<p><code>summary_stats</code> holds the distribution of each module’s scores, and <code>module_sd</code> the standard deviation of each module’s scores across samples.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">head</span>(res<span class="op">$</span>summary_stats, <span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="co">#&gt;        module       Min         Q1      Median         Mean        Q3      Max</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="co">#&gt;        &lt;char&gt;     &lt;num&gt;      &lt;num&gt;       &lt;num&gt;        &lt;num&gt;     &lt;num&gt;    &lt;num&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a><span class="co">#&gt; 1: Merged.M17 -1.226135 -0.3507488 -0.10019392 -0.005109776 0.3182107 1.703412</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a><span class="co">#&gt; 2:  Merged.M7 -1.564677 -0.4443154  0.04368833 -0.067000461 0.2798524 1.683075</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a><span class="co">#&gt; 3:  Merged.M4 -1.422675 -0.3512657  0.01522392  0.007352940 0.3347662 1.409191</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">head</span>(res<span class="op">$</span>module_sd, <span class="dv">3</span>), <span class="dv">2</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a><span class="co">#&gt; Merged.M17  Merged.M7  Merged.M4 </span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a><span class="co">#&gt;       0.56       0.57       0.62</span></span></code></pre></div>
+<p><code>module_proteins</code> lists the proteins that went into each scored module.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co"># Number of proteins per module</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="kw">summary</span>(<span class="kw">lengths</span>(res<span class="op">$</span>module_proteins))</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="co">#&gt;    3.00    4.00    6.00   11.83   11.50   93.00</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="kw">head</span>(res<span class="op">$</span>module_proteins[[<span class="st">&quot;Merged.M17&quot;</span>]])</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;ZWILCH&quot; &quot;SPC25&quot;  &quot;NDC80&quot;  &quot;WEE2&quot;   &quot;CKAP2&quot;  &quot;ZW10&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="co"># Spread of the first eight module scores (simulated data, no biological</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co"># meaning), labeled by module term</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>terms &lt;-<span class="st"> </span><span class="kw">load_prebuilt_terms</span>(<span class="st">&quot;core_AD_plasma_biomarkers&quot;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>labels &lt;-<span class="st"> </span>terms<span class="op">$</span>term[<span class="kw">match</span>(<span class="kw">colnames</span>(res<span class="op">$</span>scores)[<span class="dv">1</span><span class="op">:</span><span class="dv">8</span>], terms<span class="op">$</span>name)]</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">14</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="kw">boxplot</span>(res<span class="op">$</span>scores[, <span class="dv">1</span><span class="op">:</span><span class="dv">8</span>], <span class="dt">names =</span> labels, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>, <span class="dt">las =</span> <span class="dv">1</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>        <span class="dt">cex.axis =</span> <span class="fl">0.7</span>, <span class="dt">xlab =</span> <span class="st">&quot;WSS score&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" alt="Horizontal boxplots of WSS scores for the first eight modules, labeled by module term, across the 50 simulated samples." /></p>
+</div>
+<div id="using-your-own-module-table" class="section level2">
+<h2>Using your own module table</h2>
+<p>A module table is a <code>data.table</code> (a data frame is converted to one) with these columns:</p>
+<ul>
+<li><code>module</code>: module name,</li>
+<li><code>symbol</code>: protein identifier, matching the column names of the matrix,</li>
+<li><code>mean_beta</code>: its sign sets the direction of alignment,</li>
+<li><code>mean_alpha_scaled</code>: the weight.</li>
+</ul>
+<p>Before scoring, <code>calculate_WSS()</code> cleans the table in two steps. If a protein is assigned to more than one module, only its highest-ranked assignment is kept (ranked by <code>dedup_by</code>, <code>&quot;mean_alpha_scaled&quot;</code> by default). Then modules with fewer than <code>min_module_size</code> proteins (3 by default) are dropped.</p>
+<p>The next table has three modules. One protein, the first one listed, is in both <code>modA</code> and <code>modB</code>, with a higher weight in <code>modA</code>. <code>modC</code> has only two proteins.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>proteins &lt;-<span class="st"> </span><span class="kw">colnames</span>(wss_example_expression)[<span class="dv">1</span><span class="op">:</span><span class="dv">12</span>]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>custom &lt;-<span class="st"> </span>data.table<span class="op">::</span><span class="kw">data.table</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a>  <span class="dt">module =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;modA&quot;</span>, <span class="dv">5</span>), <span class="kw">rep</span>(<span class="st">&quot;modB&quot;</span>, <span class="dv">6</span>), <span class="kw">rep</span>(<span class="st">&quot;modC&quot;</span>, <span class="dv">2</span>)),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>  <span class="dt">symbol =</span> <span class="kw">c</span>(proteins[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>], proteins[<span class="dv">6</span><span class="op">:</span><span class="dv">10</span>], proteins[<span class="dv">1</span>], proteins[<span class="dv">11</span><span class="op">:</span><span class="dv">12</span>]),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a>  <span class="dt">mean_beta =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">5</span>), <span class="kw">rep</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dv">6</span>), <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">2</span>)),</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>  <span class="dt">mean_alpha_scaled =</span> <span class="kw">c</span>(<span class="fl">0.9</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.6</span>, <span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">0.8</span>, <span class="fl">0.7</span>, <span class="fl">0.6</span>, <span class="fl">0.5</span>, <span class="fl">0.3</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a>                        <span class="fl">0.8</span>, <span class="fl">0.8</span>),</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a>  <span class="dt">specificity =</span> <span class="kw">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.9</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a>                  <span class="fl">0.5</span>, <span class="fl">0.5</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>custom</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a><span class="co">#&gt;     module   symbol mean_beta mean_alpha_scaled specificity</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="co">#&gt;     &lt;char&gt;   &lt;char&gt;     &lt;num&gt;             &lt;num&gt;       &lt;num&gt;</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a><span class="co">#&gt;  1:   modA   ZWILCH         1               0.9         0.2</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="co">#&gt;  2:   modA    HYOU1         1               0.8         0.2</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="co">#&gt;  3:   modA    EFNB2         1               0.7         0.2</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a><span class="co">#&gt;  4:   modA  DNAJB11         1               0.6         0.2</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a><span class="co">#&gt;  5:   modA HSP90AA1         1               0.5         0.2</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a><span class="co">#&gt;  6:   modB     DNM2        -1               0.9         0.2</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="co">#&gt;  7:   modB    AP2B1        -1               0.8         0.2</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="co">#&gt;  8:   modB    CPLX2        -1               0.7         0.2</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a><span class="co">#&gt;  9:   modB    FGFR1        -1               0.6         0.2</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a><span class="co">#&gt; 10:   modB      TNF        -1               0.5         0.2</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="co">#&gt; 11:   modB   ZWILCH        -1               0.3         0.9</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a><span class="co">#&gt; 12:   modC HSP90AB1         1               0.8         0.5</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a><span class="co">#&gt; 13:   modC    EPHA2         1               0.8         0.5</span></span></code></pre></div>
+<p>With the defaults, the shared protein stays in <code>modA</code> and <code>modC</code> is dropped:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a>custom_res &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(wss_example_expression, custom)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="kw">lengths</span>(custom_res<span class="op">$</span>module_proteins)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="co">#&gt; modA modB </span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a><span class="co">#&gt;    5    5</span></span></code></pre></div>
+<p>Ranking duplicates by another column changes which module keeps the shared protein. Here <code>specificity</code> favors <code>modB</code>, so <code>modA</code> loses it:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>by_specificity &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>  wss_example_expression,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>  custom,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>  <span class="dt">dedup_by =</span> <span class="st">&quot;specificity&quot;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="kw">lengths</span>(by_specificity<span class="op">$</span>module_proteins)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a><span class="co">#&gt; modB modA </span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a><span class="co">#&gt;    6    4</span></span></code></pre></div>
+<p>Lowering <code>min_module_size</code> keeps the small module:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>with_small &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>  wss_example_expression,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>  custom,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>  <span class="dt">min_module_size =</span> <span class="dv">2</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a><span class="kw">lengths</span>(with_small<span class="op">$</span>module_proteins)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a><span class="co">#&gt; modA modB modC </span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a><span class="co">#&gt;    5    5    2</span></span></code></pre></div>
+</div>
+<div id="missing-proteins-and-missing-values" class="section level2">
+<h2>Missing proteins and missing values</h2>
+<p>If the matrix lacks some of a module’s proteins, the module is scored from the proteins that are present. If it lacks all of them, the module gets <code>NA</code> scores and a <code>module_sd</code> of 0, plus a warning, one per module. To see which modules were actually scored, look at <code>module_proteins</code> or at all-<code>NA</code> columns in <code>scores</code>. Note that <code>min_module_size</code> filters the module table, not the matrix, so a module can be scored from only a few of its proteins; check <code>module_proteins</code> before relying on a sparsely covered module.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="co"># Keep only the first 300 proteins; the warnings are suppressed here</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>partial &lt;-<span class="st"> </span><span class="kw">suppressWarnings</span>(<span class="kw">calculate_WSS</span>(wss_example_expression[, <span class="dv">1</span><span class="op">:</span><span class="dv">300</span>]))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a><span class="co"># Modules that could be scored, and modules with no proteins in the matrix</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a><span class="kw">length</span>(partial<span class="op">$</span>module_proteins)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a><span class="co">#&gt; [1] 50</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a><span class="kw">sum</span>(<span class="kw">colSums</span>(<span class="kw">is.na</span>(partial<span class="op">$</span>scores)) <span class="op">==</span><span class="st"> </span><span class="kw">nrow</span>(partial<span class="op">$</span>scores))</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a><span class="co">#&gt; [1] 25</span></span></code></pre></div>
+<p>Missing values <em>within</em> the matrix are different: they are not supported for the proteins a module uses. <code>calculate_WSS()</code> stops with an error that names the affected proteins, so impute the values, or drop the affected proteins or samples, before calling it. Missing values in proteins that no module uses are ignored.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="co"># One missing value in a protein that a module uses</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>with_na &lt;-<span class="st"> </span>wss_example_expression</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a>with_na[<span class="dv">1</span>, <span class="dv">2</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a><span class="co"># calculate_WSS() stops and names the affected protein</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a><span class="kw">tryCatch</span>(<span class="kw">calculate_WSS</span>(with_na), <span class="dt">error =</span> <span class="cf">function</span>(e) <span class="kw">conditionMessage</span>(e))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;`expr_matrix` has missing values (NA) in 1 protein(s) used by the modules, e.g. HYOU1. calculate_WSS() does not handle missing values; impute them, or drop the affected proteins or samples, before scoring.&quot;</span></span></code></pre></div>
+</div>
+<div id="scoring-new-samples-against-a-reference-cohort" class="section level2">
+<h2>Scoring new samples against a reference cohort</h2>
+<p>With INT, the transformed value of a sample depends on the other samples it is ranked with. To score new samples on the same scale as a reference cohort without changing the reference, rank-normalize the reference cohort in-sample and use <code>project_rank_norm()</code> to place each new value within the frozen reference.</p>
+<p>Here the first 40 mock samples play the reference cohort and the last 10 the new samples.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a>reference_rows &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">40</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a>new_rows &lt;-<span class="st"> </span><span class="dv">41</span><span class="op">:</span><span class="dv">50</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true"></a><span class="co"># Rank-normalize the reference cohort in-sample, one protein per column</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true"></a>reference_int &lt;-<span class="st"> </span><span class="kw">apply</span>(raw[reference_rows, ], <span class="dv">2</span>, RNOmni<span class="op">::</span>RankNorm)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true"></a><span class="co"># Project each new sample onto the frozen reference, protein by protein</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true"></a>new_int &lt;-<span class="st"> </span><span class="kw">vapply</span>(</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true"></a>  <span class="kw">colnames</span>(raw),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true"></a>  <span class="cf">function</span>(protein) {</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true"></a>    <span class="kw">project_rank_norm</span>(raw[reference_rows, protein], raw[new_rows, protein])</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true"></a>  },</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true"></a>  <span class="kw">numeric</span>(<span class="kw">length</span>(new_rows))</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true"></a>)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true"></a><span class="kw">rownames</span>(new_int) &lt;-<span class="st"> </span><span class="kw">rownames</span>(raw)[new_rows]</span></code></pre></div>
+<p>With the reference and the new samples on the same INT scale, both can be scored in the same way:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a>reference_scores &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(reference_int)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>new_scores &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(new_int)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a><span class="kw">dim</span>(reference_scores<span class="op">$</span>scores)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true"></a><span class="co">#&gt; [1] 40 75</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true"></a><span class="kw">dim</span>(new_scores<span class="op">$</span>scores)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true"></a><span class="co">#&gt; [1] 10 75</span></span></code></pre></div>
+<p>The package bundles a reference distribution only for the plasma biomarkers used by <code>predict_WSS()</code>. For proteins, supply your own reference cohort. The vignette <a href="exploring-datasets.html">Exploring the bundled datasets</a> describes that reference and the other bundled files.</p>
+</div>
+<div id="interpreting-and-comparing-scores" class="section level2">
+<h2>Interpreting and comparing scores</h2>
+<ul>
+<li>Scores are on the scale of the input, so compare scores only when they were computed from input prepared the same way.</li>
+<li><code>predict_WSS()</code> predicts module scores on the INT-based scale of the bundled reference. Scores computed from other scalings, such as z-scaled log2 ratios, are not directly comparable with its predictions. The vignette <a href="predicting-wss.html">Predicting Weighted Sum Scores from plasma biomarkers</a> covers that function.</li>
+<li>The data in this vignette are simulated and have no biological meaning.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

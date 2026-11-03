@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Predicting Weighted Sum Scores from plasma biomarkers</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Predicting Weighted Sum Scores from plasma biomarkers</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(WSSmod)</span></code></pre></div>
+<div id="why-predict-weighted-sum-scores" class="section level2">
+<h2>Why predict Weighted Sum Scores</h2>
+<p>Measuring the full proteomic panel is expensive. <code>predict_WSS()</code> instead predicts all 75 module scores of the bundled <code>&quot;core_AD_plasma_biomarkers&quot;</code> reference set from age, sex and eight plasma biomarkers, using a fitted <code>joinet</code> model (a two-layer elastic net) shipped with the package. The vignette <a href="calculating-wss.html">Calculating Weighted Sum Scores</a> describes the scores themselves; the modules, biomarkers and prediction model are described in the <a href="https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text">preprint</a>.</p>
+<p>The prediction has two steps:</p>
+<ol style="list-style-type: decimal">
+<li><code>normalize_wss_biomarkers()</code> puts the raw biomarker values on the rank-based inverse normal transformed (INT) scale the model was trained on.</li>
+<li><code>predict_WSS()</code> returns the module scores.</li>
+</ol>
+<p><code>predict_WSS()</code> needs the suggested packages <code>glmnet</code> and <code>joinet</code>. Chunks below that use them run only if both are installed.</p>
+</div>
+<div id="the-inputs" class="section level2">
+<h2>The inputs</h2>
+<p>The model uses ten columns:</p>
+<ul>
+<li><code>Age</code>, in years,</li>
+<li><code>Gender</code>, numeric, with <code>1</code> for male and <code>0</code> for not male,</li>
+<li>eight raw plasma biomarkers: <code>PlasmaPTau181</code>, <code>PlasmaAB142P</code>, <code>PlasmaAB140P</code>, <code>PlasmaABRatio</code>, <code>PlasmapTau217</code>, <code>PlasmapTau217_AB42Ratio</code>, <code>PlasmaGFAP</code> and <code>PlasmaNfL</code>.</li>
+</ul>
+<p>Plasma pTau181, pTau217, Aβ42, Aβ40, NfL and GFAP were measured on the fully automated Lumipulse G 1200 platform (Fujirebio US, Inc, Malvern, PA), following the recommendations of the NACC Working Group. The two ratio columns are derived from these measures (Aβ42/Aβ40 and pTau217/Aβ42).</p>
+<div id="example-data" class="section level3">
+<h3>Example data</h3>
+<p>The package ships <code>wss_example_biomarkers</code>, simulated values for 20 patients with these columns. They have no biological meaning.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">dim</span>(wss_example_biomarkers)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="co">#&gt; [1] 20 10</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="kw">head</span>(wss_example_biomarkers, <span class="dv">3</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="co">#&gt;           Age Gender PlasmaPTau181 PlasmaAB142P PlasmaAB140P PlasmaABRatio</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a><span class="co">#&gt; patient01  77      1        1.4203      28.6814     249.8937        0.0963</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="co">#&gt; patient02  82      1        2.4113      25.5083     185.1647        0.1052</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a><span class="co">#&gt; patient03  58      1        2.0431      24.1875     516.0148        0.0783</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a><span class="co">#&gt;           PlasmapTau217 PlasmapTau217_AB42Ratio PlasmaGFAP PlasmaNfL</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a><span class="co">#&gt; patient01        0.2373                  0.0053    53.2866   27.6111</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a><span class="co">#&gt; patient02        0.1343                  0.0017    13.7432   34.9938</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="co">#&gt; patient03        0.5072                  0.0175    38.1114   40.8202</span></span></code></pre></div>
+<p>Only the biomarkers are normalized. <code>Age</code> stays in raw years and <code>Gender</code> stays 0/1.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># The eight raw biomarker columns, without Age and Gender</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>biomarker_cols &lt;-<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">names</span>(wss_example_biomarkers), <span class="kw">c</span>(<span class="st">&quot;Age&quot;</span>, <span class="st">&quot;Gender&quot;</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>raw_biomarkers &lt;-<span class="st"> </span>wss_example_biomarkers[, biomarker_cols]</span></code></pre></div>
+</div>
+</div>
+<div id="choosing-a-normalization" class="section level2">
+<h2>Choosing a normalization</h2>
+<p><code>normalize_wss_biomarkers()</code> has two methods. Both return a data frame with the same column names and row names as the input.</p>
+<div id="method-project-default" class="section level3">
+<h3><code>method = &quot;project&quot;</code> (default)</h3>
+<p>Each raw value is placed within a bundled reference distribution of baseline values with <code>project_rank_norm()</code>, one biomarker at a time. A value does not depend on the other patients in your data, so this works for a single patient as well as for a cohort.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># One patient</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>one_patient &lt;-<span class="st"> </span><span class="kw">normalize_wss_biomarkers</span>(raw_biomarkers[<span class="dv">1</span>, ])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">round</span>(one_patient, <span class="dv">2</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">#&gt;           PlasmaPTau181 PlasmaAB142P PlasmaAB140P PlasmaABRatio PlasmapTau217</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co">#&gt; patient01         -0.35         0.13        -1.22          0.23          0.53</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt;           PlasmapTau217_AB42Ratio PlasmaGFAP PlasmaNfL</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt; patient01                    0.04      -0.23      0.75</span></span></code></pre></div>
+<p>The same patient gets the same normalized values when scored with others:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># A cohort of 20 patients</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>projected &lt;-<span class="st"> </span><span class="kw">normalize_wss_biomarkers</span>(raw_biomarkers)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">all.equal</span>(projected[<span class="dv">1</span>, ], one_patient)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The bundled reference is anonymized: each biomarker’s values were shuffled independently, so it preserves the distribution of each biomarker but not the relationships between them. <code>load_prebuilt_biomarker_reference()</code> returns it.</p>
+</div>
+<div id="method-self" class="section level3">
+<h3><code>method = &quot;self&quot;</code></h3>
+<p>Each biomarker is rank-normalized within your own data with <code>RNOmni::RankNorm()</code>. The result depends on who else is in the data, and it needs at least two patients, so it is appropriate for a sizeable cohort whose distribution you are comfortable normalizing against directly.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>self_normalized &lt;-<span class="st"> </span><span class="kw">normalize_wss_biomarkers</span>(raw_biomarkers, <span class="dt">method =</span> <span class="st">&quot;self&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">head</span>(self_normalized, <span class="dv">3</span>), <span class="dv">2</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a><span class="co">#&gt;           PlasmaPTau181 PlasmaAB142P PlasmaAB140P PlasmaABRatio PlasmapTau217</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a><span class="co">#&gt; patient01         -0.31         0.19        -1.13         -0.19         -0.19</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a><span class="co">#&gt; patient02          0.59         0.06        -1.87          0.59         -0.74</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt; patient03          0.45        -0.19         1.87         -0.74          1.13</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">#&gt;           PlasmapTau217_AB42Ratio PlasmaGFAP PlasmaNfL</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a><span class="co">#&gt; patient01                   -0.31      -0.45      0.45</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="co">#&gt; patient02                   -1.40      -1.87      0.59</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a><span class="co">#&gt; patient03                    0.74      -1.40      0.74</span></span></code></pre></div>
+<p>With a single patient it stops with an error:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">tryCatch</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>  <span class="kw">normalize_wss_biomarkers</span>(raw_biomarkers[<span class="dv">1</span>, ], <span class="dt">method =</span> <span class="st">&quot;self&quot;</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>  <span class="dt">error =</span> <span class="cf">function</span>(e) <span class="kw">conditionMessage</span>(e)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;method = \&quot;self\&quot; requires multiple samples to rank against; use method = \&quot;project\&quot; for a single sample or small cohort.&quot;</span></span></code></pre></div>
+</div>
+<div id="which-to-use" class="section level3">
+<h3>Which to use</h3>
+<ul>
+<li>For one patient or a small group, use <code>&quot;project&quot;</code>.</li>
+<li>For a larger cohort, either works. <code>&quot;project&quot;</code> keeps the values comparable with other data scored the same way and with the model’s training scale. <code>&quot;self&quot;</code> instead centers each biomarker on your own cohort, which suits an analysis of that cohort alone.</li>
+<li>Do not mix the two in one analysis.</li>
+</ul>
+</div>
+</div>
+<div id="predicting-module-scores" class="section level2">
+<h2>Predicting module scores</h2>
+<p>Add <code>Age</code> and <code>Gender</code> back to the normalized biomarkers and call <code>predict_WSS()</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>newdata &lt;-<span class="st"> </span><span class="kw">cbind</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>  wss_example_biomarkers[, <span class="kw">c</span>(<span class="st">&quot;Age&quot;</span>, <span class="st">&quot;Gender&quot;</span>)],</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>  projected</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>pred &lt;-<span class="st"> </span><span class="kw">predict_WSS</span>(newdata)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="kw">names</span>(pred)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;base&quot; &quot;meta&quot;</span></span></code></pre></div>
+<p>The result is a list of two matrices with one row per patient, named as in <code>newdata</code>, and one column per module:</p>
+<ul>
+<li><code>meta</code> holds the final predictions, from the second layer of the model. These are the scores to use.</li>
+<li><code>base</code> holds the predictions of the first layer alone, before the modules’ correlations are used to refine them. They are returned for comparison.</li>
+</ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">dim</span>(pred<span class="op">$</span>meta)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co">#&gt; [1] 20 75</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="kw">round</span>(pred<span class="op">$</span>meta[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">4</span>], <span class="dv">2</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a><span class="co">#&gt;           Merged.M17 Merged.M7 Merged.M4 PlasmaPTau181.M26</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="co">#&gt; patient01       0.07     -0.16      0.13             -0.22</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="co">#&gt; patient02       0.19      0.05     -0.62              0.25</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="co">#&gt; patient03      -0.19      0.20      0.45              0.30</span></span></code></pre></div>
+<p>The columns are the same modules that <code>calculate_WSS()</code> scores with the default reference set, in the order of the model’s outcomes. A patient scored alone matches the same patient scored in a cohort:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>single &lt;-<span class="st"> </span><span class="kw">predict_WSS</span>(<span class="kw">cbind</span>(wss_example_biomarkers[<span class="dv">1</span>, <span class="kw">c</span>(<span class="st">&quot;Age&quot;</span>, <span class="st">&quot;Gender&quot;</span>)],</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a>                            one_patient))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a><span class="kw">all.equal</span>(single<span class="op">$</span>meta[<span class="dv">1</span>, ], pred<span class="op">$</span>meta[<span class="dv">1</span>, ])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<div id="reading-the-scores" class="section level3">
+<h3>Reading the scores</h3>
+<ul>
+<li>A predicted score is on the INT-based scale of the bundled reference set, centered near zero. A higher value means more activity of the module in the direction associated with the core biomarkers, as for measured scores.</li>
+<li>Predicted scores are less spread out than measured ones, because a model with few inputs cannot reproduce all of the variation:</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co"># Standard deviation of the predicted scores, first five modules</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="kw">round</span>(<span class="kw">apply</span>(pred<span class="op">$</span>meta, <span class="dv">2</span>, sd)[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>], <span class="dv">2</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="co">#&gt;        Merged.M17         Merged.M7         Merged.M4 PlasmaPTau181.M26 </span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a><span class="co">#&gt;              0.13              0.28              0.37              0.43 </span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a><span class="co">#&gt;         Merged.M8 </span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a><span class="co">#&gt;              0.20</span></span></code></pre></div>
+<ul>
+<li>Compare predicted scores with other predicted scores. They are not directly comparable with scores computed by <code>calculate_WSS()</code> from data on a different scale, such as z-scaled log2 ratios.</li>
+<li>Human-readable labels for the modules are in <code>load_prebuilt_terms(&quot;core_AD_plasma_biomarkers&quot;)</code>.</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="co"># Spread of the first eight predicted module scores (simulated data, no</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a><span class="co"># biological meaning), labeled by module term</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>terms &lt;-<span class="st"> </span><span class="kw">load_prebuilt_terms</span>(<span class="st">&quot;core_AD_plasma_biomarkers&quot;</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>labels &lt;-<span class="st"> </span>terms<span class="op">$</span>term[<span class="kw">match</span>(<span class="kw">colnames</span>(pred<span class="op">$</span>meta)[<span class="dv">1</span><span class="op">:</span><span class="dv">8</span>], terms<span class="op">$</span>name)]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a><span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">14</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a><span class="kw">boxplot</span>(pred<span class="op">$</span>meta[, <span class="dv">1</span><span class="op">:</span><span class="dv">8</span>], <span class="dt">names =</span> labels, <span class="dt">horizontal =</span> <span class="ot">TRUE</span>, <span class="dt">las =</span> <span class="dv">1</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>        <span class="dt">cex.axis =</span> <span class="fl">0.7</span>, <span class="dt">xlab =</span> <span class="st">&quot;Predicted WSS score&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" alt="Horizontal boxplots of predicted WSS scores for the first eight modules, labeled by module term, across 20 simulated patients." /></p>
+</div>
+</div>
+<div id="intended-use-and-limits" class="section level2">
+<h2>Intended use and limits</h2>
+<ul>
+<li><code>predict_WSS()</code> is for research use only. It is not a diagnostic tool.</li>
+<li>The model was trained on a single baseline cohort. Its performance in other cohorts, assays or populations has not been established.</li>
+<li>The biomarker inputs must be measured as in the training data (see “How the biomarkers were measured”). Values from a different assay or platform can produce meaningless predictions even after normalization.</li>
+<li>All ten inputs are required, and missing values are not supported.</li>
+<li>The data in this vignette are simulated and have no biological meaning.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

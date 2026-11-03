@@ -1,0 +1,215 @@
+---
+title: "Predicting Weighted Sum Scores from plasma biomarkers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Predicting Weighted Sum Scores from plasma biomarkers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+# Keep data.table within CRAN's thread limits
+data.table::setDTthreads(2)
+
+# RNOmni, glmnet and joinet are suggested packages; chunks that need them are
+# skipped without them
+has_rnomni <- requireNamespace("RNOmni", quietly = TRUE)
+has_model <- requireNamespace("glmnet", quietly = TRUE) &&
+  requireNamespace("joinet", quietly = TRUE)
+```
+
+```{r load}
+library(WSSmod)
+```
+
+## Why predict Weighted Sum Scores
+
+Measuring the full proteomic panel is expensive. `predict_WSS()` instead
+predicts all 75 module scores of the bundled `"core_AD_plasma_biomarkers"`
+reference set from age, sex and eight plasma biomarkers, using a fitted
+`joinet` model (a two-layer elastic net) shipped with the package. The
+vignette [Calculating Weighted Sum Scores](calculating-wss.html) describes the
+scores themselves; the modules, biomarkers and prediction model are
+described in the [preprint](https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text).
+
+The prediction has two steps:
+
+1. `normalize_wss_biomarkers()` puts the raw biomarker values on the
+   rank-based inverse normal transformed (INT) scale the model was trained on.
+2. `predict_WSS()` returns the module scores.
+
+`predict_WSS()` needs the suggested packages `glmnet` and `joinet`. Chunks
+below that use them run only if both are installed.
+
+## The inputs
+
+The model uses ten columns:
+
+* `Age`, in years,
+* `Gender`, numeric, with `1` for male and `0` for not male,
+* eight raw plasma biomarkers: `PlasmaPTau181`, `PlasmaAB142P`,
+  `PlasmaAB140P`, `PlasmaABRatio`, `PlasmapTau217`,
+  `PlasmapTau217_AB42Ratio`, `PlasmaGFAP` and `PlasmaNfL`.
+
+Plasma pTau181, pTau217, Aβ42, Aβ40, NfL and GFAP were measured on the fully
+automated Lumipulse G 1200 platform (Fujirebio US, Inc, Malvern, PA),
+following the recommendations of the NACC Working Group. The two ratio columns
+are derived from these measures (Aβ42/Aβ40 and pTau217/Aβ42).
+
+### Example data
+
+The package ships `wss_example_biomarkers`, simulated values for 20 patients
+with these columns. They have no biological meaning.
+
+```{r inputs}
+dim(wss_example_biomarkers)
+head(wss_example_biomarkers, 3)
+```
+
+Only the biomarkers are normalized. `Age` stays in raw years and `Gender`
+stays 0/1.
+
+```{r split}
+# The eight raw biomarker columns, without Age and Gender
+biomarker_cols <- setdiff(names(wss_example_biomarkers), c("Age", "Gender"))
+raw_biomarkers <- wss_example_biomarkers[, biomarker_cols]
+```
+
+## Choosing a normalization
+
+`normalize_wss_biomarkers()` has two methods. Both return a data frame with
+the same column names and row names as the input.
+
+### `method = "project"` (default)
+
+Each raw value is placed within a bundled reference distribution of baseline
+values with `project_rank_norm()`, one biomarker at a time. A value does not
+depend on the other patients in your data, so this works for a single patient
+as well as for a cohort.
+
+```{r project-one}
+# One patient
+one_patient <- normalize_wss_biomarkers(raw_biomarkers[1, ])
+round(one_patient, 2)
+```
+
+The same patient gets the same normalized values when scored with others:
+
+```{r project-cohort}
+# A cohort of 20 patients
+projected <- normalize_wss_biomarkers(raw_biomarkers)
+all.equal(projected[1, ], one_patient)
+```
+
+The bundled reference is anonymized: each biomarker's values were shuffled
+independently, so it preserves the distribution of each biomarker but not the
+relationships between them. `load_prebuilt_biomarker_reference()` returns it.
+
+### `method = "self"`
+
+Each biomarker is rank-normalized within your own data with
+`RNOmni::RankNorm()`. The result depends on who else is in the data, and it
+needs at least two patients, so it is appropriate for a sizeable cohort whose
+distribution you are comfortable normalizing against directly.
+
+```{r self, eval = has_rnomni}
+self_normalized <- normalize_wss_biomarkers(raw_biomarkers, method = "self")
+round(head(self_normalized, 3), 2)
+```
+
+With a single patient it stops with an error:
+
+```{r self-one, eval = has_rnomni}
+tryCatch(
+  normalize_wss_biomarkers(raw_biomarkers[1, ], method = "self"),
+  error = function(e) conditionMessage(e)
+)
+```
+
+### Which to use
+
+* For one patient or a small group, use `"project"`.
+* For a larger cohort, either works. `"project"` keeps the values comparable
+  with other data scored the same way and with the model's training scale.
+  `"self"` instead centers each biomarker on your own cohort, which suits
+  an analysis of that cohort alone.
+* Do not mix the two in one analysis.
+
+## Predicting module scores
+
+Add `Age` and `Gender` back to the normalized biomarkers and call
+`predict_WSS()`.
+
+```{r predict, eval = has_model}
+newdata <- cbind(
+  wss_example_biomarkers[, c("Age", "Gender")],
+  projected
+)
+pred <- predict_WSS(newdata)
+names(pred)
+```
+
+The result is a list of two matrices with one row per patient, named as in
+`newdata`, and one column per module:
+
+* `meta` holds the final predictions, from the second layer of the model. These
+  are the scores to use.
+* `base` holds the predictions of the first layer alone, before the modules'
+  correlations are used to refine them. They are returned for comparison.
+
+```{r predict-shape, eval = has_model}
+dim(pred$meta)
+round(pred$meta[1:3, 1:4], 2)
+```
+
+The columns are the same modules that `calculate_WSS()` scores with the default
+reference set, in the order of the model's outcomes. A patient scored
+alone matches the same patient scored in a cohort:
+
+```{r predict-one, eval = has_model}
+single <- predict_WSS(cbind(wss_example_biomarkers[1, c("Age", "Gender")],
+                            one_patient))
+all.equal(single$meta[1, ], pred$meta[1, ])
+```
+
+### Reading the scores
+
+* A predicted score is on the INT-based scale of the bundled reference set,
+  centered near zero. A higher value means more activity of the module in the
+  direction associated with the core biomarkers, as for measured scores.
+* Predicted scores are less spread out than measured ones, because a model
+  with few inputs cannot reproduce all of the variation:
+
+```{r spread, eval = has_model}
+# Standard deviation of the predicted scores, first five modules
+round(apply(pred$meta, 2, sd)[1:5], 2)
+```
+
+* Compare predicted scores with other predicted scores. They are not directly
+  comparable with scores computed by `calculate_WSS()` from data on a different
+  scale, such as z-scaled log2 ratios.
+* Human-readable labels for the modules are in
+  `load_prebuilt_terms("core_AD_plasma_biomarkers")`.
+
+```{r boxplot, eval = has_model, fig.width = 6, fig.height = 3.5, fig.alt = "Horizontal boxplots of predicted WSS scores for the first eight modules, labeled by module term, across 20 simulated patients."}
+# Spread of the first eight predicted module scores (simulated data, no
+# biological meaning), labeled by module term
+terms <- load_prebuilt_terms("core_AD_plasma_biomarkers")
+labels <- terms$term[match(colnames(pred$meta)[1:8], terms$name)]
+par(mar = c(4, 14, 1, 1))
+boxplot(pred$meta[, 1:8], names = labels, horizontal = TRUE, las = 1,
+        cex.axis = 0.7, xlab = "Predicted WSS score")
+```
+
+## Intended use and limits
+
+* `predict_WSS()` is for research use only. It is not a diagnostic tool.
+* The model was trained on a single baseline cohort. Its performance in other
+  cohorts, assays or populations has not been established.
+* The biomarker inputs must be measured as in the training data (see "How the
+  biomarkers were measured"). Values from a different assay or platform can
+  produce meaningless predictions even after normalization.
+* All ten inputs are required, and missing values are not supported.
+* The data in this vignette are simulated and have no biological meaning.

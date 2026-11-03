@@ -1,0 +1,205 @@
+---
+title: "Exploring the bundled datasets"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Exploring the bundled datasets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+
+# Keep data.table within CRAN's thread limits
+data.table::setDTthreads(2)
+```
+
+```{r load}
+library(WSSmod)
+```
+
+WSSmod ships files in `inst/extdata` that belong to a named *prebuilt
+reference set*, plus two small simulated datasets for examples. This vignette
+describes each one: what it is, how to load it, and what it can and cannot be
+used for. The other vignettes put them to use:
+[Calculating Weighted Sum Scores](calculating-wss.html) and
+[Predicting Weighted Sum Scores from plasma biomarkers](predicting-wss.html).
+
+## Available reference sets
+
+```{r list}
+list_prebuilt_wss()
+```
+
+There is one set, `"core_AD_plasma_biomarkers"`. Every function below takes it
+as its `prebuilt` argument, and as the default. A set can have up to four
+files, and each is read with its own function:
+
+| File | Function | Contents |
+|------|----------|----------|
+| scores | `load_prebuilt_wss()` | module and protein weighting table |
+| terms | `load_prebuilt_terms()` | module labels and enrichment summary |
+| model | `load_prebuilt_wss_model()` | fitted `joinet` prediction model |
+| biomarker reference | `load_prebuilt_biomarker_reference()` | anonymized baseline biomarker values |
+
+## The module and protein weighting table
+
+`load_prebuilt_wss()` returns the table that `calculate_WSS()` uses by default,
+with one row per protein-in-module assignment.
+
+```{r scores}
+weights <- load_prebuilt_wss()
+dim(weights)
+names(weights)
+```
+
+The columns `calculate_WSS()` needs are
+
+* `module`: module name, built as `Biomarker`, a dot, and `cluster`
+  (for example `Merged.M17`),
+* `symbol`: protein gene symbol, matching the columns of your matrix,
+* `mean_beta`: its sign sets the direction a protein is aligned in,
+* `mean_alpha_scaled`: the weight of the protein within its module, scaled to
+  at most 1.
+
+```{r scores-head}
+head(weights[, c("module", "symbol", "term", "mean_beta", "mean_alpha_scaled")])
+```
+
+The other columns describe where a row came from: the identifiers `GENE` and
+`ix` (an aptamer identifier), the module's `term` label, the original
+biomarker-specific groups and terms that the protein came from (`orig_groups`
+and `orig_terms`), and network connectivity summaries (`mean_degree` and
+`mean_strength`).
+
+### Why a protein can be in several modules
+
+A protein can be assigned to more than one module, because the modules were
+built from several biomarker analyses and then merged.
+
+```{r duplicates}
+c(
+  rows = nrow(weights),
+  proteins = length(unique(weights$symbol)),
+  modules = length(unique(weights$module))
+)
+
+# Proteins that are in more than one module
+multi <- weights[, .N, by = symbol][N > 1]
+nrow(multi)
+weights[symbol == multi$symbol[1], c("module", "symbol", "term", "mean_alpha_scaled")]
+```
+
+`calculate_WSS()` removes this overlap before scoring. It keeps each protein
+in the module where it has the highest `mean_alpha_scaled` (the `dedup_by`
+argument), then drops modules with fewer than `min_module_size` proteins (3 by
+default). That leaves the 75 modules that the prediction model also covers.
+
+```{r dedup}
+res <- calculate_WSS(wss_example_expression)
+c(
+  modules_scored = ncol(res$scores),
+  proteins_scored = length(unique(unlist(res$module_proteins)))
+)
+```
+
+## Module term labels
+
+`load_prebuilt_terms()` returns one row per scored module with a short label,
+the group the module came from, and `mean.Zsum`, the Zsummary preservation
+score of the module across 12 independent GNPC cohorts in the
+[preprint](https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text).
+
+```{r terms}
+terms <- load_prebuilt_terms()
+dim(terms)
+head(terms)
+```
+
+The `name` column matches the module names in the weighting table and in the
+columns of `calculate_WSS()` and `predict_WSS()` results, so it can be used to
+label them:
+
+```{r terms-match}
+modules <- colnames(res$scores)[1:3]
+terms$term[match(modules, terms$name)]
+```
+
+`group` is the biomarker analysis a module came from, with `Merged` for modules
+built from all of them together.
+
+```{r terms-group}
+table(terms$group)
+```
+
+## The prediction model
+
+`load_prebuilt_wss_model()` returns a list with the fitted model and what it
+needs.
+
+```{r model}
+model_info <- load_prebuilt_wss_model()
+names(model_info)
+model_info$variant
+model_info$x_cols
+head(model_info$outcomes)
+length(model_info$outcomes)
+```
+
+* `x_cols` are the predictor columns `predict_WSS()` requires, in order: age,
+  sex and the eight plasma biomarkers.
+* `outcomes` are the 75 module names it predicts, the same names as in the
+  terms table.
+* `variant` names the set of predictors the model was trained on.
+* `model` is the fitted `joinet` object. Predicting from it needs the suggested
+  packages `glmnet` and `joinet`, which is why the other vignette guards those
+  chunks. Reading the list does not need them, so nothing above does.
+
+To predict, use `predict_WSS()` rather than the model directly.
+
+## The anonymized biomarker reference
+
+`load_prebuilt_biomarker_reference()` returns baseline values for the eight
+plasma biomarkers, in long format, that `normalize_wss_biomarkers()` uses with
+`method = "project"`.
+
+```{r reference}
+reference <- load_prebuilt_biomarker_reference()
+head(reference, 3)
+reference[, .(n = .N, median = signif(median(value), 3)), by = biomarker]
+```
+
+This reference data comes from real distributions, but each biomarker has been 
+scrambled independently to completely anonymize the values. It is used only for
+per-biomarker questions, such as where a new value falls within the
+distribution. It has no valid joint structure, so do not use it to look at
+relationships between biomarkers or to train or evaluate models.
+
+## Simulated example data
+
+Two datasets, available as soon as the package is loaded, are simulated and have no biological
+meaning. They exist for examples and tests:
+
+* `wss_example_expression`: a 50-sample by 887-protein matrix covering every
+  protein in the default modules,
+* `wss_example_biomarkers`: age, sex and eight raw biomarkers for 20 patients.
+
+```{r simulated}
+dim(wss_example_expression)
+dim(wss_example_biomarkers)
+```
+
+## Provenance and use
+
+The prebuilt files were derived from plasma proteomic and biomarker data from
+the Longo Lab, as described in the [preprint](https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text). They are included so that scores can be calculated and predicted
+without access to the original data.
+
+## Adding a reference set
+
+Reference sets are listed in one registry in the package source,
+`.wss_prebuilt_registry` in `R/prebuilt_wss.R`. A new set is registered by
+giving it a name and the file names of its parts. Only the scores file is
+required; the terms, model and biomarker reference files are optional, and the
+loaders return `NULL` for a part a set does not have. The files go in
+`inst/extdata`, and the new name then appears in `list_prebuilt_wss()`.

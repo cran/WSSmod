@@ -1,0 +1,76 @@
+name,term,group,mean.Zsum
+Merged.M1,PI3K-Akt|JAK-STAT|MAPK signaling,Merged,10.3921793592571
+Merged.M11,ER-Golgi transport,Merged,8.92401549902095
+Merged.M7,Chaperone|Protein folding,Merged,8.46306055421214
+Merged.M9,Carbon metabolism,Merged,7.07896108588759
+Merged.M2,Adaptive immunity|Immunoglobulins|Cytokines,Merged,6.89428493256761
+PlasmaPTau181.M8,Protein Ubiquitination,PlasmaPTau181,6.48979026955049
+Merged.M6,RNA-binding,Merged,6.41118909540887
+Merged.M12,Translation,Merged,5.82833267691693
+PlasmaAB140P.M17,Multivesicular body assembly,PlasmaAB140P,5.80842138782375
+Merged.M4,Ephrin signaling,Merged,5.62789970058963
+Merged.M5,Wnt signaling,Merged,5.30554281557259
+PlasmaAB140P.M20,tRNA aminoacylation,PlasmaAB140P,4.66186095421532
+Merged.M8,Synaptic vesicle|SNARE complex,Merged,4.27178573554018
+PlasmaPTau181.M35,ESCRT complex,PlasmaPTau181,4.01093516294801
+Merged.M10,Neuroactive ligand-receptor interaction,Merged,3.91572673991426
+Merged.M13,Collagen,Merged,3.91059766834959
+Merged.M26,RHO GTPase|Neurotrophin signaling,Merged,3.90680721501757
+PlasmaPTau181.M18,Myosin,PlasmaPTau181,3.85225949641105
+Merged.M3,Complement cascade,Merged,3.80776206611898
+Merged.M19,Focal adhesion|Integrins,Merged,3.77224653297137
+PlasmaPTau181.M26,Clathrin endocytosis,PlasmaPTau181,3.74404283765517
+Merged.M14,Neurexins|Neuroligins,Merged,3.74288462826432
+Merged.M16,Cadherin|Cell adhesion,Merged,3.74143691515097
+Merged.M29,Actin dynamics,Merged,3.59918411106049
+Merged.M24,Neddylation,Merged,3.58623840098278
+PlasmaPTau181.M13,Histone methyltransferase,PlasmaPTau181,3.17036809683895
+PlasmaPTau181.M47,Endosomal transport,PlasmaPTau181,3.04169357653325
+Merged.M25,Amino acid metabolism,Merged,3.03618743725359
+PlasmaAB140P.M35,K48-dependent protein binding,PlasmaAB140P,2.92180689938793
+PlasmaPTau181.M46,Cytoplasmic stress granule,PlasmaPTau181,2.81841709470028
+Merged.M20,NFkB|APC/C degradation,Merged,2.81092915441482
+Merged.M22,Glutathione metabolism|Oxidative stress,Merged,2.70624487822055
+Merged.M32,Synapse assembly,Merged,2.6581074290568
+Merged.M15,HDL,Merged,2.65757375971157
+Merged.M21,Autophagy,Merged,2.59690679487019
+Merged.M18,Glycosylation,Merged,2.58898743074203
+PlasmaPTau181.M5,Dementia|HDL,PlasmaPTau181,2.53013479483106
+PlasmaAB140P.M15,Fatty acid metabolic process,PlasmaAB140P,2.46090718256742
+Merged.M27,BMP signaling,Merged,2.38581128227162
+PlasmaAB140P.M40,Mitochondrial protein import,PlasmaAB140P,2.32932759280684
+PlasmaNfL.M3,Extracellular space,PlasmaNfL,2.22933910990798
+PlasmaAB140P.M18,Tyrosine kinase receptor signaling,PlasmaAB140P,2.18554565820768
+Merged.M17,Cell cycle,Merged,2.16886302813675
+PlasmaPTau181.M30,Fatty acid transport,PlasmaPTau181,2.08213089773217
+PlasmaGFAP.M12,NK cell cytotoxicity,PlasmaGFAP,2.05211967055967
+Merged.M28,Serine protease inhibitor,Merged,2.00797547991393
+PlasmaAB142P.M36,Protein phosphatase,PlasmaAB142P,2.00642087510486
+PlasmaPTau181.M27,DNA repair,PlasmaPTau181,1.95905056912232
+PlasmaPTau181.M24,AMPK signaling,PlasmaPTau181,1.91216499086216
+PlasmaNfL.M22,Fatty acid beta-oxidation,PlasmaNfL,1.87760315464702
+PlasmaPTau181.M40,Voltage-gated calcium channel|MAPK signaling,PlasmaPTau181,1.85931995196642
+PlasmaAB140P.M50,Nucleotide metabolism,PlasmaAB140P,1.84586664707411
+PlasmaAB140P.M22,GPCR signaling pathway,PlasmaAB140P,1.83869226593105
+Merged.M35,Hippo signaling,Merged,1.80796877154771
+PlasmaPTau181.M43,Respiratory chain,PlasmaPTau181,1.78364987661097
+PlasmaGFAP.M9,ECM proteoglycans,PlasmaGFAP,1.54580883208322
+PlasmaPTau181.M23,Dendrite,PlasmaPTau181,1.5221302949902
+PlasmaPTau181.M20,Alcohol dehydrogenase activity,PlasmaPTau181,1.50054953820008
+PlasmaAB142P.M29,Aminopeptidase,PlasmaAB142P,1.26471060367604
+PlasmaAB140P.M44,Calcium-dependent protein binding,PlasmaAB140P,1.24279751034524
+PlasmaAB142P.M25,Insulin growth factor binding,PlasmaAB142P,1.23467626954716
+PlasmaNfL.M33,Sodium channel regulator,PlasmaNfL,1.17029038717974
+Merged.M30,GPI-anchor synthesis,Merged,1.11195217332277
+Merged.M33,Matrix metalloprotease,Merged,1.04766928481934
+PlasmaAB140P.M24,Negative regulation of IFNg,PlasmaAB140P,1.01593355604594
+PlasmaNfL.M25,Glycosphingolipid metabolism,PlasmaNfL,0.862967451737888
+PlasmaAB140P.M45,Glycerolipid metabolism,PlasmaAB140P,0.860804158906216
+PlasmaAB140P.M41,Apoptosis modulation and signaling,PlasmaAB140P,0.78083288610243
+PlasmaAB140P.M38,O-glycan processing,PlasmaAB140P,0.751457015461328
+PlasmaNfL.M21,TGF-beta signaling,PlasmaNfL,0.735421167613066
+PlasmaAB140P.M28,Chromagranin,PlasmaAB140P,0.734751178110208
+PlasmaAB142P.M34,Secretin receptor,PlasmaAB142P,0.672004114566142
+PlasmaAB140P.M48,ATPase transmembrane transport,PlasmaAB140P,0.501204127297186
+PlasmapTau217.M3,Dermatan sulfate metabolism,PlasmapTau217,0.473417250366291
+PlasmaPTau181.M37,NOD pathway|NFkB,PlasmaPTau181,-0.57851171863793

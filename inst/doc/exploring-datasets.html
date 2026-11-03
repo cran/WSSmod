@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Exploring the bundled datasets</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Exploring the bundled datasets</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(WSSmod)</span></code></pre></div>
+<p>WSSmod ships files in <code>inst/extdata</code> that belong to a named <em>prebuilt reference set</em>, plus two small simulated datasets for examples. This vignette describes each one: what it is, how to load it, and what it can and cannot be used for. The other vignettes put them to use: <a href="calculating-wss.html">Calculating Weighted Sum Scores</a> and <a href="predicting-wss.html">Predicting Weighted Sum Scores from plasma biomarkers</a>.</p>
+<div id="available-reference-sets" class="section level2">
+<h2>Available reference sets</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">list_prebuilt_wss</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;core_AD_plasma_biomarkers&quot;</span></span></code></pre></div>
+<p>There is one set, <code>&quot;core_AD_plasma_biomarkers&quot;</code>. Every function below takes it as its <code>prebuilt</code> argument, and as the default. A set can have up to four files, and each is read with its own function:</p>
+<table>
+<colgroup>
+<col width="23%"></col>
+<col width="38%"></col>
+<col width="38%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Function</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>scores</td>
+<td><code>load_prebuilt_wss()</code></td>
+<td>module and protein weighting table</td>
+</tr>
+<tr class="even">
+<td>terms</td>
+<td><code>load_prebuilt_terms()</code></td>
+<td>module labels and enrichment summary</td>
+</tr>
+<tr class="odd">
+<td>model</td>
+<td><code>load_prebuilt_wss_model()</code></td>
+<td>fitted <code>joinet</code> prediction model</td>
+</tr>
+<tr class="even">
+<td>biomarker reference</td>
+<td><code>load_prebuilt_biomarker_reference()</code></td>
+<td>anonymized baseline biomarker values</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-module-and-protein-weighting-table" class="section level2">
+<h2>The module and protein weighting table</h2>
+<p><code>load_prebuilt_wss()</code> returns the table that <code>calculate_WSS()</code> uses by default, with one row per protein-in-module assignment.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>weights &lt;-<span class="st"> </span><span class="kw">load_prebuilt_wss</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="kw">dim</span>(weights)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="co">#&gt; [1] 992  13</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="kw">names</span>(weights)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="co">#&gt;  [1] &quot;Biomarker&quot;         &quot;symbol&quot;            &quot;cluster&quot;          </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a><span class="co">#&gt;  [4] &quot;GENE&quot;              &quot;ix&quot;                &quot;term&quot;             </span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="co">#&gt;  [7] &quot;orig_groups&quot;       &quot;orig_terms&quot;        &quot;mean_beta&quot;        </span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a><span class="co">#&gt; [10] &quot;mean_degree&quot;       &quot;mean_strength&quot;     &quot;mean_alpha_scaled&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a><span class="co">#&gt; [13] &quot;module&quot;</span></span></code></pre></div>
+<p>The columns <code>calculate_WSS()</code> needs are</p>
+<ul>
+<li><code>module</code>: module name, built as <code>Biomarker</code>, a dot, and <code>cluster</code> (for example <code>Merged.M17</code>),</li>
+<li><code>symbol</code>: protein gene symbol, matching the columns of your matrix,</li>
+<li><code>mean_beta</code>: its sign sets the direction a protein is aligned in,</li>
+<li><code>mean_alpha_scaled</code>: the weight of the protein within its module, scaled to at most 1.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">head</span>(weights[, <span class="kw">c</span>(<span class="st">&quot;module&quot;</span>, <span class="st">&quot;symbol&quot;</span>, <span class="st">&quot;term&quot;</span>, <span class="st">&quot;mean_beta&quot;</span>, <span class="st">&quot;mean_alpha_scaled&quot;</span>)])</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="co">#&gt;        module   symbol                      term  mean_beta mean_alpha_scaled</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="co">#&gt;        &lt;char&gt;   &lt;char&gt;                    &lt;char&gt;      &lt;num&gt;             &lt;num&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="co">#&gt; 1: Merged.M17   ZWILCH                Cell cycle -0.4732375         1.0000000</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="co">#&gt; 2:  Merged.M7    HYOU1 Chaperone|Protein folding  0.1603553         0.9961153</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="co">#&gt; 3:  Merged.M4    EFNB2          Ephrin signaling  0.4591349         0.8693081</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a><span class="co">#&gt; 4:  Merged.M7  DNAJB11 Chaperone|Protein folding  0.2211760         0.8307261</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="co">#&gt; 5:  Merged.M7 HSP90AA1 Chaperone|Protein folding  0.5141629         0.7016303</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="co">#&gt; 6:  Merged.M7     DNM2 Chaperone|Protein folding  0.5718974         0.6381931</span></span></code></pre></div>
+<p>The other columns describe where a row came from: the identifiers <code>GENE</code> and <code>ix</code> (an aptamer identifier), the module’s <code>term</code> label, the original biomarker-specific groups and terms that the protein came from (<code>orig_groups</code> and <code>orig_terms</code>), and network connectivity summaries (<code>mean_degree</code> and <code>mean_strength</code>).</p>
+<div id="why-a-protein-can-be-in-several-modules" class="section level3">
+<h3>Why a protein can be in several modules</h3>
+<p>A protein can be assigned to more than one module, because the modules were built from several biomarker analyses and then merged.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">c</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="dt">rows =</span> <span class="kw">nrow</span>(weights),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="dt">proteins =</span> <span class="kw">length</span>(<span class="kw">unique</span>(weights<span class="op">$</span>symbol)),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="dt">modules =</span> <span class="kw">length</span>(<span class="kw">unique</span>(weights<span class="op">$</span>module))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a><span class="co">#&gt;     rows proteins  modules </span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a><span class="co">#&gt;      992      898       82</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a><span class="co"># Proteins that are in more than one module</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>multi &lt;-<span class="st"> </span>weights[, .N, by =<span class="st"> </span>symbol][N <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a><span class="kw">nrow</span>(multi)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="co">#&gt; [1] 89</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>weights[symbol <span class="op">==</span><span class="st"> </span>multi<span class="op">$</span>symbol[<span class="dv">1</span>], <span class="kw">c</span>(<span class="st">&quot;module&quot;</span>, <span class="st">&quot;symbol&quot;</span>, <span class="st">&quot;term&quot;</span>, <span class="st">&quot;mean_alpha_scaled&quot;</span>)]</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">#&gt;       module symbol                             term mean_alpha_scaled</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="co">#&gt;       &lt;char&gt; &lt;char&gt;                           &lt;char&gt;             &lt;num&gt;</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a><span class="co">#&gt; 1: Merged.M1  EPHA2 PI3K-Akt|JAK-STAT|MAPK signaling         0.5786472</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a><span class="co">#&gt; 2: Merged.M4  EPHA2                 Ephrin signaling         0.2760032</span></span></code></pre></div>
+<p><code>calculate_WSS()</code> removes this overlap before scoring. It keeps each protein in the module where it has the highest <code>mean_alpha_scaled</code> (the <code>dedup_by</code> argument), then drops modules with fewer than <code>min_module_size</code> proteins (3 by default). That leaves the 75 modules that the prediction model also covers.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>res &lt;-<span class="st"> </span><span class="kw">calculate_WSS</span>(wss_example_expression)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="kw">c</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  <span class="dt">modules_scored =</span> <span class="kw">ncol</span>(res<span class="op">$</span>scores),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>  <span class="dt">proteins_scored =</span> <span class="kw">length</span>(<span class="kw">unique</span>(<span class="kw">unlist</span>(res<span class="op">$</span>module_proteins)))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a><span class="co">#&gt;  modules_scored proteins_scored </span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a><span class="co">#&gt;              75             887</span></span></code></pre></div>
+</div>
+</div>
+<div id="module-term-labels" class="section level2">
+<h2>Module term labels</h2>
+<p><code>load_prebuilt_terms()</code> returns one row per scored module with a short label, the group the module came from, and <code>mean.Zsum</code>, the Zsummary preservation score of the module across 12 independent GNPC cohorts in the <a href="https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text">preprint</a>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>terms &lt;-<span class="st"> </span><span class="kw">load_prebuilt_terms</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="kw">dim</span>(terms)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="co">#&gt; [1] 75  4</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a><span class="kw">head</span>(terms)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a><span class="co">#&gt;                name                                        term         group</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a><span class="co">#&gt;              &lt;char&gt;                                      &lt;char&gt;        &lt;char&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a><span class="co">#&gt; 1:        Merged.M1            PI3K-Akt|JAK-STAT|MAPK signaling        Merged</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a><span class="co">#&gt; 2:       Merged.M11                          ER-Golgi transport        Merged</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a><span class="co">#&gt; 3:        Merged.M7                   Chaperone|Protein folding        Merged</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a><span class="co">#&gt; 4:        Merged.M9                           Carbon metabolism        Merged</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a><span class="co">#&gt; 5:        Merged.M2 Adaptive immunity|Immunoglobulins|Cytokines        Merged</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a><span class="co">#&gt; 6: PlasmaPTau181.M8                      Protein Ubiquitination PlasmaPTau181</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a><span class="co">#&gt;    mean.Zsum</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a><span class="co">#&gt;        &lt;num&gt;</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a><span class="co">#&gt; 1: 10.392179</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true"></a><span class="co">#&gt; 2:  8.924015</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true"></a><span class="co">#&gt; 3:  8.463061</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true"></a><span class="co">#&gt; 4:  7.078961</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true"></a><span class="co">#&gt; 5:  6.894285</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true"></a><span class="co">#&gt; 6:  6.489790</span></span></code></pre></div>
+<p>The <code>name</code> column matches the module names in the weighting table and in the columns of <code>calculate_WSS()</code> and <code>predict_WSS()</code> results, so it can be used to label them:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>modules &lt;-<span class="st"> </span><span class="kw">colnames</span>(res<span class="op">$</span>scores)[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>terms<span class="op">$</span>term[<span class="kw">match</span>(modules, terms<span class="op">$</span>name)]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;Cell cycle&quot;                &quot;Chaperone|Protein folding&quot;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="co">#&gt; [3] &quot;Ephrin signaling&quot;</span></span></code></pre></div>
+<p><code>group</code> is the biomarker analysis a module came from, with <code>Merged</code> for modules built from all of them together.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="kw">table</span>(terms<span class="op">$</span>group)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co">#&gt; </span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="co">#&gt;        Merged  PlasmaAB140P  PlasmaAB142P    PlasmaGFAP     PlasmaNfL </span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a><span class="co">#&gt;            32            15             4             2             5 </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="co">#&gt; PlasmaPTau181 PlasmapTau217 </span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="co">#&gt;            16             1</span></span></code></pre></div>
+</div>
+<div id="the-prediction-model" class="section level2">
+<h2>The prediction model</h2>
+<p><code>load_prebuilt_wss_model()</code> returns a list with the fitted model and what it needs.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a>model_info &lt;-<span class="st"> </span><span class="kw">load_prebuilt_wss_model</span>()</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="kw">names</span>(model_info)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;model&quot;      &quot;outcomes&quot;   &quot;variant&quot;    &quot;alpha_base&quot; &quot;alpha_meta&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a><span class="co">#&gt; [6] &quot;x_cols&quot;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>model_info<span class="op">$</span>variant</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;Biomarkers_Age_Sex&quot;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a>model_info<span class="op">$</span>x_cols</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a><span class="co">#&gt;  [1] &quot;Age&quot;                     &quot;Gender&quot;                 </span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a><span class="co">#&gt;  [3] &quot;PlasmaPTau181&quot;           &quot;PlasmaAB142P&quot;           </span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a><span class="co">#&gt;  [5] &quot;PlasmaAB140P&quot;            &quot;PlasmaABRatio&quot;          </span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="co">#&gt;  [7] &quot;PlasmapTau217&quot;           &quot;PlasmapTau217_AB42Ratio&quot;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a><span class="co">#&gt;  [9] &quot;PlasmaGFAP&quot;              &quot;PlasmaNfL&quot;</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a><span class="kw">head</span>(model_info<span class="op">$</span>outcomes)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;Merged.M17&quot;        &quot;Merged.M7&quot;         &quot;Merged.M4&quot;        </span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a><span class="co">#&gt; [4] &quot;PlasmaPTau181.M26&quot; &quot;Merged.M8&quot;         &quot;Merged.M1&quot;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="kw">length</span>(model_info<span class="op">$</span>outcomes)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="co">#&gt; [1] 75</span></span></code></pre></div>
+<ul>
+<li><code>x_cols</code> are the predictor columns <code>predict_WSS()</code> requires, in order: age, sex and the eight plasma biomarkers.</li>
+<li><code>outcomes</code> are the 75 module names it predicts, the same names as in the terms table.</li>
+<li><code>variant</code> names the set of predictors the model was trained on.</li>
+<li><code>model</code> is the fitted <code>joinet</code> object. Predicting from it needs the suggested packages <code>glmnet</code> and <code>joinet</code>, which is why the other vignette guards those chunks. Reading the list does not need them, so nothing above does.</li>
+</ul>
+<p>To predict, use <code>predict_WSS()</code> rather than the model directly.</p>
+</div>
+<div id="the-anonymized-biomarker-reference" class="section level2">
+<h2>The anonymized biomarker reference</h2>
+<p><code>load_prebuilt_biomarker_reference()</code> returns baseline values for the eight plasma biomarkers, in long format, that <code>normalize_wss_biomarkers()</code> uses with <code>method = &quot;project&quot;</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a>reference &lt;-<span class="st"> </span><span class="kw">load_prebuilt_biomarker_reference</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="kw">head</span>(reference, <span class="dv">3</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a><span class="co">#&gt;        biomarker value</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a><span class="co">#&gt;           &lt;char&gt; &lt;num&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a><span class="co">#&gt; 1: PlasmaPTau181  0.89</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a><span class="co">#&gt; 2: PlasmaPTau181  1.35</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a><span class="co">#&gt; 3: PlasmaPTau181  1.48</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>reference[, .(<span class="dt">n =</span> .N, <span class="dt">median =</span> <span class="kw">signif</span>(<span class="kw">median</span>(value), <span class="dv">3</span>)), by =<span class="st"> </span>biomarker]</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a><span class="co">#&gt;                  biomarker     n   median</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a><span class="co">#&gt;                     &lt;char&gt; &lt;int&gt;    &lt;num&gt;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a><span class="co">#&gt; 1:           PlasmaPTau181   389 1.62e+00</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a><span class="co">#&gt; 2:            PlasmaAB142P   389 2.78e+01</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a><span class="co">#&gt; 3:            PlasmaAB140P   389 3.03e+02</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a><span class="co">#&gt; 4:           PlasmaABRatio   389 9.22e-02</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a><span class="co">#&gt; 5:           PlasmapTau217   389 1.49e-01</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a><span class="co">#&gt; 6: PlasmapTau217_AB42Ratio   389 5.14e-03</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a><span class="co">#&gt; 7:              PlasmaGFAP   389 5.88e+01</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true"></a><span class="co">#&gt; 8:               PlasmaNfL   389 2.03e+01</span></span></code></pre></div>
+<p>This reference data comes from real distributions, but each biomarker has been scrambled independently to completely anonymize the values. It is used only for per-biomarker questions, such as where a new value falls within the distribution. It has no valid joint structure, so do not use it to look at relationships between biomarkers or to train or evaluate models.</p>
+</div>
+<div id="simulated-example-data" class="section level2">
+<h2>Simulated example data</h2>
+<p>Two datasets, available as soon as the package is loaded, are simulated and have no biological meaning. They exist for examples and tests:</p>
+<ul>
+<li><code>wss_example_expression</code>: a 50-sample by 887-protein matrix covering every protein in the default modules,</li>
+<li><code>wss_example_biomarkers</code>: age, sex and eight raw biomarkers for 20 patients.</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">dim</span>(wss_example_expression)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a><span class="co">#&gt; [1]  50 887</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a><span class="kw">dim</span>(wss_example_biomarkers)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a><span class="co">#&gt; [1] 20 10</span></span></code></pre></div>
+</div>
+<div id="provenance-and-use" class="section level2">
+<h2>Provenance and use</h2>
+<p>The prebuilt files were derived from plasma proteomic and biomarker data from the Longo Lab, as described in the <a href="https://www.medrxiv.org/content/10.64898/2026.08.14.26360394v1.full-text">preprint</a>. They are included so that scores can be calculated and predicted without access to the original data.</p>
+</div>
+<div id="adding-a-reference-set" class="section level2">
+<h2>Adding a reference set</h2>
+<p>Reference sets are listed in one registry in the package source, <code>.wss_prebuilt_registry</code> in <code>R/prebuilt_wss.R</code>. A new set is registered by giving it a name and the file names of its parts. Only the scores file is required; the terms, model and biomarker reference files are optional, and the loaders return <code>NULL</code> for a part a set does not have. The files go in <code>inst/extdata</code>, and the new name then appears in <code>list_prebuilt_wss()</code>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
